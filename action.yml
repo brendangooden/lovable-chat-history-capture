@@ -1,0 +1,69 @@
+name: "Lovable Chat History Export"
+description: "Export a Lovable project's chat history from Firestore into a git-diffable directory."
+author: "brendangooden"
+branding:
+  icon: "message-square"
+  color: "purple"
+
+inputs:
+  api_key:
+    description: "Firebase Web API key (LOVABLE_FIREBASE_API_KEY). Extract from browser IndexedDB."
+    required: true
+  refresh_token:
+    description: "Lovable refresh token (LOVABLE_REFRESH_TOKEN). Extract from browser IndexedDB."
+    required: true
+  project_id:
+    description: "Lovable project UUID (from lovable.dev/projects/<id>)."
+    required: true
+  output_dir:
+    description: "Directory to write exported chat history into."
+    required: false
+    default: "chat-history"
+  firestore_project:
+    description: "Firestore GCP project hosting Lovable data (e.g. gpt-engineer-xxxxxx). Find in DevTools → Network on any firestore.googleapis.com URL."
+    required: true
+  lovable_api_base:
+    description: "Lovable API base URL used to mint signed attachment URLs. Defaults to https://api.lovable.dev."
+    required: false
+    default: ""
+  since:
+    description: "ISO-8601 timestamp — only sync docs updated at or after this time."
+    required: false
+    default: ""
+  bun_version:
+    description: "Bun version to use."
+    required: false
+    default: "1.1.38"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      with:
+        bun-version: ${{ inputs.bun_version }}
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: bun install --frozen-lockfile
+
+    - name: Export chat history
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        LOVABLE_FIREBASE_API_KEY: ${{ inputs.api_key }}
+        LOVABLE_REFRESH_TOKEN: ${{ inputs.refresh_token }}
+        LOVABLE_PROJECT_ID: ${{ inputs.project_id }}
+        LOVABLE_FIRESTORE_PROJECT: ${{ inputs.firestore_project }}
+        LOVABLE_API_BASE: ${{ inputs.lovable_api_base }}
+        OUTPUT_DIR: ${{ inputs.output_dir }}
+        INPUT_SINCE: ${{ inputs.since }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        set -euo pipefail
+        ARGS=()
+        if [ -n "$INPUT_SINCE" ]; then
+          ARGS+=(--since "$INPUT_SINCE")
+        fi
+        bun run "$ACTION_PATH/src/index.ts" "${ARGS[@]}"

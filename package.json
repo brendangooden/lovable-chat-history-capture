@@ -1,0 +1,22 @@
+{
+  "name": "lovable-chat-history-capture",
+  "version": "0.1.0",
+  "description": "Export Lovable chat history from Firebase Firestore into a git-diffable local directory.",
+  "type": "module",
+  "bin": {
+    "lovable-chat-export": "./src/index.ts"
+  },
+  "scripts": {
+    "export": "bun run src/index.ts",
+    "typecheck": "bun x tsc --noEmit",
+    "test": "bun test"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  }
+}
