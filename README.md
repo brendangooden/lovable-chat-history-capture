@@ -125,10 +125,6 @@ In practice this is rare — most refresh exchanges return the same token.
 - This tool only reads. It never writes to Firestore or Lovable.
 - Firebase API key is public by design (it's embedded in Lovable's frontend); the refresh token is the actual credential.
 
-## Why not use the WebChannel trace in `research/`?
-
-`research/request_response_firebase.txt` captures Lovable's real-time `Listen/channel` traffic. Useful for reverse-engineering the schema, but session-bound and can't be replayed. This tool uses the stable Firestore REST API instead.
-
 ## License
 
 MIT — see [LICENSE](LICENSE).
