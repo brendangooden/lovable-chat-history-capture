@@ -1,3 +1,5 @@
+import { fetchWithRetry } from "./retry.ts";
+
 export interface FirestoreDocument {
   name: string;
   fields?: Record<string, FirestoreValue>;
@@ -41,9 +43,11 @@ export async function listAllDocuments(
     url.searchParams.set("pageSize", String(PAGE_SIZE));
     if (pageToken) url.searchParams.set("pageToken", pageToken);
 
-    const res = await fetch(url, {
-      headers: { authorization: `Bearer ${idToken}` },
-    });
+    const res = await fetchWithRetry(
+      url,
+      { headers: { authorization: `Bearer ${idToken}` } },
+      { label: `firestore/${collectionPath}` },
+    );
     if (!res.ok) {
       const text = await res.text();
       throw new FirestoreError(
@@ -74,8 +78,9 @@ export function decodeValue(value: FirestoreValue): unknown {
   if ("stringValue" in value) return value.stringValue;
   if ("booleanValue" in value) return value.booleanValue;
   if ("integerValue" in value) {
-    const n = Number(value.integerValue);
-    return Number.isSafeInteger(n) ? n : value.integerValue;
+    // Firestore emits integers as strings (to preserve precision beyond 2^53).
+    // Keep them as strings here; callers that need numbers should parse explicitly.
+    return value.integerValue;
   }
   if ("doubleValue" in value) return value.doubleValue;
   if ("timestampValue" in value) return value.timestampValue;

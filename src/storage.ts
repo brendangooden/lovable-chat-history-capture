@@ -1,10 +1,22 @@
 import { mkdir, writeFile, access } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { fetchWithRetry } from "./retry.ts";
 
 export interface ImageRef {
-  file_id?: unknown;
-  file_name?: unknown;
-  dir_name?: unknown;
+  file_id: string;
+  file_name: string;
+  dir_name: string;
+  type?: string;
+}
+
+export function isImageRef(value: unknown): value is ImageRef {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.file_id === "string" &&
+    typeof v.file_name === "string" &&
+    typeof v.dir_name === "string"
+  );
 }
 
 export interface AttachmentDownload {
@@ -16,7 +28,6 @@ export interface AttachmentDownload {
 
 export type AttachmentResult =
   | { kind: "ok"; download: AttachmentDownload }
-  | { kind: "invalid-ref" }
   | { kind: "denied"; sourcePath: string; status: number }
   | { kind: "error"; sourcePath: string; status: number; message: string };
 
@@ -26,14 +37,7 @@ export async function downloadAttachmentIfMissing(
   attachmentsDir: string,
   ref: ImageRef,
 ): Promise<AttachmentResult> {
-  const fileId = typeof ref.file_id === "string" ? ref.file_id : undefined;
-  const fileName =
-    typeof ref.file_name === "string" ? ref.file_name : undefined;
-  const dirName = typeof ref.dir_name === "string" ? ref.dir_name : undefined;
-  if (!fileId || !fileName || !dirName) {
-    return { kind: "invalid-ref" };
-  }
-
+  const { file_id: fileId, file_name: fileName, dir_name: dirName } = ref;
   const safeName = sanitizeFileName(fileName);
   const localPath = join(attachmentsDir, `${fileId}__${safeName}`);
   const sourcePath = `${dirName}/${fileId}`;
@@ -53,7 +57,11 @@ export async function downloadAttachmentIfMissing(
   );
   if (signed.kind !== "ok") return { ...signed, sourcePath };
 
-  const res = await fetch(signed.url);
+  const res = await fetchWithRetry(
+    signed.url,
+    undefined,
+    { label: "storage/signed-url-download" },
+  );
   if (!res.ok) {
     const text = await res.text();
     return {
@@ -85,14 +93,18 @@ async function requestSignedUrl(
   fileId: string,
 ): Promise<SignResult> {
   const url = `${lovableApiBase.replace(/\/$/, "")}/files/generate-download-url`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${idToken}`,
-      "content-type": "application/json",
+  const res = await fetchWithRetry(
+    url,
+    {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${idToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ dir_name: dirName, file_name: fileId }),
     },
-    body: JSON.stringify({ dir_name: dirName, file_name: fileId }),
-  });
+    { label: "lovable-api/generate-download-url" },
+  );
 
   if (!res.ok) {
     if (res.status === 401 || res.status === 403 || res.status === 404) {

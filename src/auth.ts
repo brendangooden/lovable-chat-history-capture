@@ -1,4 +1,5 @@
 import { readFile, writeFile, rename, unlink } from "node:fs/promises";
+import { fetchWithRetry } from "./retry.ts";
 
 export interface TokenExchange {
   idToken: string;
@@ -17,11 +18,15 @@ export async function exchangeRefreshToken(
     refresh_token: refreshToken,
   });
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body,
-  });
+  const res = await fetchWithRetry(
+    url,
+    {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body,
+    },
+    { label: "securetoken/v1/token" },
+  );
 
   if (!res.ok) {
     const text = await res.text();
