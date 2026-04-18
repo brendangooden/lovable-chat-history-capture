@@ -7,15 +7,11 @@ import {
   writeRotatedRefreshToken,
 } from "./auth.ts";
 import { loadConfig } from "./config.ts";
+import { EXIT } from "./exitCodes.ts";
 import { FirestoreError, listAllDocuments } from "./firestore.ts";
 import { loadManifest, saveManifest } from "./manifest.ts";
 import { syncEdits, syncTrajectory } from "./sync.ts";
 import { buildTimeline, writeTimeline } from "./timeline.ts";
-
-const EXIT_OK = 0;
-const EXIT_AUTH = 1;
-const EXIT_FETCH = 2;
-const EXIT_UNKNOWN = 3;
 
 async function main(): Promise<void> {
   const config = loadConfig(process.argv.slice(2));
@@ -96,16 +92,16 @@ async function main(): Promise<void> {
 }
 
 main()
-  .then(() => process.exit(EXIT_OK))
+  .then(() => process.exit(EXIT.OK))
   .catch((err) => {
     if (err instanceof AuthError) {
       console.error(`auth: ${err.message}`);
-      process.exit(EXIT_AUTH);
+      process.exit(EXIT.AUTH);
     }
     if (err instanceof FirestoreError) {
       console.error(`firestore: ${err.message}`);
-      process.exit(EXIT_FETCH);
+      process.exit(EXIT.FETCH);
     }
     console.error(err);
-    process.exit(EXIT_UNKNOWN);
+    process.exit(EXIT.UNKNOWN);
   });

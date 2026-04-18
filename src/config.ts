@@ -1,6 +1,7 @@
 import { parseArgs } from "node:util";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { EXIT } from "./exitCodes.ts";
 
 export interface Config {
   apiKey: string;
@@ -57,11 +58,13 @@ export function loadConfig(argv: string[]): Config {
     values["firestore-project"] ?? process.env.LOVABLE_FIRESTORE_PROJECT,
   );
   const lovableApiBase =
-    values["lovable-api-base"] ??
-    process.env.LOVABLE_API_BASE ??
+    orUndefinedIfBlank(values["lovable-api-base"]) ??
+    orUndefinedIfBlank(process.env.LOVABLE_API_BASE) ??
     DEFAULT_LOVABLE_API_BASE;
   const outDir = resolve(
-    values.out ?? process.env.OUTPUT_DIR ?? DEFAULT_OUT_DIR,
+    orUndefinedIfBlank(values.out) ??
+      orUndefinedIfBlank(process.env.OUTPUT_DIR) ??
+      DEFAULT_OUT_DIR,
   );
 
   return {
@@ -79,9 +82,14 @@ export function loadConfig(argv: string[]): Config {
 function requireString(name: string, value: string | undefined): string {
   if (!value || !value.trim()) {
     console.error(`error: ${name} is required`);
-    process.exit(1);
+    process.exit(EXIT.CONFIG);
   }
   return value.trim();
+}
+
+function orUndefinedIfBlank(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  return value.trim().length > 0 ? value : undefined;
 }
 
 function resolveEnvFile(explicit: string | undefined): string | undefined {

@@ -71,40 +71,9 @@ lovable-chat-export [options]
 
 ### Option A — run it in your own repo
 
-Add repo secrets `LOVABLE_FIREBASE_API_KEY`, `LOVABLE_REFRESH_TOKEN`, `LOVABLE_PROJECT_ID`, `LOVABLE_FIRESTORE_PROJECT`, then create `.github/workflows/chat-history.yml`:
-
-```yaml
-name: Chat history sync
-
-on:
-  schedule:
-    - cron: "0 6 * * *"
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: brendangooden/loveable-chat-history-capture@v1
-        with:
-          api_key: ${{ secrets.LOVABLE_FIREBASE_API_KEY }}
-          refresh_token: ${{ secrets.LOVABLE_REFRESH_TOKEN }}
-          project_id: ${{ secrets.LOVABLE_PROJECT_ID }}
-          firestore_project: ${{ secrets.LOVABLE_FIRESTORE_PROJECT }}
-          output_dir: chat-history
-      - name: Commit & push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add chat-history
-          git diff --cached --quiet && exit 0
-          git commit -m "chat-history: sync $(date -u +%Y-%m-%d)"
-          git push
-```
+1. Add repo secrets: `LOVABLE_FIREBASE_API_KEY`, `LOVABLE_REFRESH_TOKEN`, `LOVABLE_PROJECT_ID`, `LOVABLE_FIRESTORE_PROJECT`.
+2. Copy [`.github/workflows/chat-history.yml`](.github/workflows/chat-history.yml) from this repo into your own `.github/workflows/` and commit.
+3. The workflow runs daily at 06:00 UTC (and on-demand via `workflow_dispatch`), auto-commits `chat-history/` if anything changed.
 
 ### Action inputs
 
@@ -113,15 +82,15 @@ jobs:
 | `api_key`           | yes      | —                                      | Firebase Web API key                                  |
 | `refresh_token`     | yes      | —                                      | Refresh token from browser IndexedDB                  |
 | `project_id`        | yes      | —                                      | Lovable project UUID                                  |
-| `output_dir`        | no       | `chat-history`                         | Where to write output inside the workspace            |
 | `firestore_project` | yes      | —                                      | Firestore GCP project hosting Lovable data            |
+| `output_dir`        | no       | `chat-history`                         | Where to write output inside the workspace            |
 | `lovable_api_base`  | no       | `https://api.lovable.dev`              | Override Lovable API base (signs attachment URLs)     |
 | `since`             | no       | —                                      | Only sync docs updated at/after this ISO timestamp    |
-| `bun_version`       | no       | `1.1.38`                               | Bun runtime version                                   |
+| `bun_version`       | no       | `1.3.12`                               | Bun runtime version                                   |
 
 ### Option B — fork this repo
 
-This repo ships `.github/workflows/chat-history.yml` which does the same on a daily cron for its own checkout. Fork, set the four secrets (`LOVABLE_FIREBASE_API_KEY`, `LOVABLE_REFRESH_TOKEN`, `LOVABLE_PROJECT_ID`, `LOVABLE_FIRESTORE_PROJECT`), done.
+This repo ships `.github/workflows/chat-history.yml` which does the same on a daily cron for its own checkout. Fork, set the four secrets above, done.
 
 ## Multiple projects
 
