@@ -40,8 +40,8 @@ Incremental — only docs whose Firestore `updateTime` changed are re-downloaded
 Requires [Bun](https://bun.sh) ≥ 1.1.
 
 ```bash
-git clone https://github.com/brendangooden/loveable-chat-history-capture
-cd loveable-chat-history-capture
+git clone https://github.com/brendangooden/lovable-chat-history-capture
+cd lovable-chat-history-capture
 bun install
 
 cp .env.example .env
@@ -101,7 +101,7 @@ strategy:
   matrix:
     project: ["uuid-1", "uuid-2"]
 steps:
-  - uses: brendangooden/loveable-chat-history-capture@v1
+  - uses: brendangooden/lovable-chat-history-capture@v1
     with:
       api_key: ${{ secrets.LOVABLE_FIREBASE_API_KEY }}
       refresh_token: ${{ secrets.LOVABLE_REFRESH_TOKEN }}
