@@ -1,8 +1,14 @@
+# Template workflow — copy into your own repo's .github/workflows/ to get a
+# daily Lovable chat history export.
+#
+# In this source repo only `workflow_dispatch` is enabled, so the template
+# doesn't try to commit to the tool's own repo on a cron. When forking, add
+# a `schedule:` trigger (example below, commented out).
 name: Chat history sync
 
 on:
-  schedule:
-    - cron: "0 6 * * *"
+  # schedule:
+  #   - cron: "0 6 * * *"   # daily at 06:00 UTC — uncomment in your fork
   workflow_dispatch:
 
 permissions:

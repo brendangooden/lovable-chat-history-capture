@@ -73,7 +73,8 @@ lovable-chat-export [options]
 
 1. Add repo secrets: `LOVABLE_FIREBASE_API_KEY`, `LOVABLE_REFRESH_TOKEN`, `LOVABLE_PROJECT_ID`, `LOVABLE_FIRESTORE_PROJECT`.
 2. Copy [`.github/workflows/chat-history.yml`](.github/workflows/chat-history.yml) from this repo into your own `.github/workflows/` and commit.
-3. The workflow runs daily at 06:00 UTC (and on-demand via `workflow_dispatch`), auto-commits `chat-history/` if anything changed.
+3. **Uncomment the `schedule:` trigger** in your copy — it ships commented out so the source repo itself doesn't run it.
+4. The workflow runs daily at 06:00 UTC (and on-demand via `workflow_dispatch`), auto-commits `chat-history/` if anything changed.
 
 ### Action inputs
 
