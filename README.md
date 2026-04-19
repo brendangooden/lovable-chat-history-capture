@@ -69,12 +69,9 @@ lovable-chat-export [options]
 
 ## GitHub Action usage
 
-### Option A — run it in your own repo
-
 1. Add repo secrets: `LOVABLE_FIREBASE_API_KEY`, `LOVABLE_REFRESH_TOKEN`, `LOVABLE_PROJECT_ID`, `LOVABLE_FIRESTORE_PROJECT`.
-2. Copy [`.github/workflows/chat-history.yml`](.github/workflows/chat-history.yml) from this repo into your own `.github/workflows/` and commit.
-3. **Uncomment the `schedule:` trigger** in your copy — it ships commented out so the source repo itself doesn't run it.
-4. The workflow runs daily at 06:00 UTC (and on-demand via `workflow_dispatch`), auto-commits `chat-history/` if anything changed.
+2. Copy [`examples/chat-history.yml`](examples/chat-history.yml) to your own repo at `.github/workflows/chat-history.yml` and commit.
+3. Workflow runs daily at 06:00 UTC (and on-demand via `workflow_dispatch`), auto-commits `chat-history/` if anything changed.
 
 ### Action inputs
 
@@ -88,10 +85,6 @@ lovable-chat-export [options]
 | `lovable_api_base`  | no       | `https://api.lovable.dev`              | Override Lovable API base (signs attachment URLs)     |
 | `since`             | no       | —                                      | Only sync docs updated at/after this ISO timestamp    |
 | `bun_version`       | no       | `1.3.12`                               | Bun runtime version                                   |
-
-### Option B — fork this repo
-
-This repo ships `.github/workflows/chat-history.yml` which does the same on a daily cron for its own checkout. Fork, set the four secrets above, done.
 
 ## Multiple projects
 

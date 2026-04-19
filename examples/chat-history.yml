@@ -1,14 +1,19 @@
-# Template workflow — copy into your own repo's .github/workflows/ to get a
-# daily Lovable chat history export.
+# Example workflow — copy to `.github/workflows/chat-history.yml` in your own
+# repo to get a daily Lovable chat history export committed to that repo.
 #
-# In this source repo only `workflow_dispatch` is enabled, so the template
-# doesn't try to commit to the tool's own repo on a cron. When forking, add
-# a `schedule:` trigger (example below, commented out).
+# Required repo secrets:
+#   LOVABLE_FIREBASE_API_KEY
+#   LOVABLE_REFRESH_TOKEN
+#   LOVABLE_PROJECT_ID
+#   LOVABLE_FIRESTORE_PROJECT
+#
+# See https://github.com/brendangooden/lovable-chat-history-capture#readme
+# for how to extract these from your browser's IndexedDB.
 name: Chat history sync
 
 on:
-  # schedule:
-  #   - cron: "0 6 * * *"   # daily at 06:00 UTC — uncomment in your fork
+  schedule:
+    - cron: "0 6 * * *"   # daily at 06:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -26,7 +31,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Export Lovable chat history
-        uses: ./
+        uses: brendangooden/lovable-chat-history-capture@v1
         with:
           api_key: ${{ secrets.LOVABLE_FIREBASE_API_KEY }}
           refresh_token: ${{ secrets.LOVABLE_REFRESH_TOKEN }}
